@@ -1,7 +1,5 @@
 import streamlit as st
 import fitz  # PyMuPDF
-import pytesseract
-from PIL import Image
 import io
 import zipfile
 import os
@@ -45,13 +43,11 @@ if uploaded_file:
             for page_num in pages:
                 supplier_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
 
-            # Step 2: Split each supplier doc by PO#
+            # Step 2: Split each supplier doc by PO# (based on keyword, no OCR)
             po_map = {}
             for page_num in range(len(supplier_doc)):
-                pix = supplier_doc[page_num].get_pixmap(dpi=200)
-                img = Image.open(io.BytesIO(pix.tobytes()))
-                ocr_text = pytesseract.image_to_string(img)
-                matches = re.findall(r"CL\d{6,}-NJ-\d+", ocr_text)
+                text = supplier_doc[page_num].get_text()
+                matches = re.findall(r"CL\d{6,}-NJ-\d+", text)
                 po = matches[0] if matches else f"Page_{page_num+1}"
                 po_map.setdefault(po, []).append(page_num)
 
